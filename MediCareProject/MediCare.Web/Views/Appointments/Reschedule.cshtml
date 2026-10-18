@@ -1,0 +1,39 @@
+@model MediCare.Web.Models.RescheduleAppointmentViewModel
+@{
+    ViewData["Title"] = "Reschedule appointment";
+}
+
+<h1>Reschedule appointment</h1>
+<p><a asp-action="MyAppointments">Back to my appointments</a></p>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h2 class="h5">Current appointment</h2>
+        <p class="mb-1">Dr. @Model.DoctorName · @Model.SpecializationName</p>
+        <p class="mb-0">@Model.CurrentStartsAt.ToString("f")</p>
+    </div>
+</div>
+
+@if (Model.Timeslots.Count == 0)
+{
+    <p>No other future times are available with this doctor.</p>
+}
+else
+{
+    <form asp-action="Reschedule" method="post" class="mb-4">
+        <input type="hidden" asp-for="AppointmentId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="NewTimeslotId" class="form-label">Choose a new time</label>
+            <select asp-for="NewTimeslotId" class="form-select">
+                <option value="0">Select a time</option>
+                @foreach (var slot in Model.Timeslots)
+                {
+                    <option value="@slot.Id">@slot.StartsAt.ToString("f") – @slot.EndsAt.ToString("t")</option>
+                }
+            </select>
+            <span asp-validation-for="NewTimeslotId" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Confirm reschedule</button>
+    </form>
+}

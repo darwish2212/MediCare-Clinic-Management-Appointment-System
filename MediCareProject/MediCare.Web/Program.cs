@@ -1,5 +1,6 @@
 
 using MediCare.Data;
+using MediCare.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,6 +37,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<AppointmentBookingService>();
+builder.Services.AddScoped<AdminSchedulingService>();
 
 var app = builder.Build();
 

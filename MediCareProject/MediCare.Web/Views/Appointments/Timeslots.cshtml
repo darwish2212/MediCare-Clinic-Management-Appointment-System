@@ -1,0 +1,30 @@
+@model MediCare.Web.Models.SelectTimeslotViewModel
+@{
+    ViewData["Title"] = "Choose a time";
+}
+
+<h1>Available times</h1>
+<p>@Model.SpecializationName · Dr. @Model.DoctorName</p>
+<p><a asp-action="Doctors" asp-route-specializationId="@Model.SpecializationId">Back to doctors</a></p>
+@if (TempData["BookingMessage"] is string message)
+{
+    <div class="alert alert-info" role="status">@message</div>
+}
+@if (Model.Timeslots.Count == 0)
+{
+    <p>No future times are available for this doctor yet.</p>
+}
+else
+{
+    <div class="list-group">
+    @foreach (var slot in Model.Timeslots)
+    {
+        <form asp-action="Book" method="post" class="list-group-item d-flex justify-content-between align-items-center">
+            <input type="hidden" name="DoctorId" value="@Model.DoctorId" />
+            <input type="hidden" name="TimeslotId" value="@slot.Id" />
+            <span>@slot.StartsAt.ToString("f") – @slot.EndsAt.ToString("t")</span>
+            <button type="submit" class="btn btn-primary">Book this time</button>
+        </form>
+    }
+    </div>
+}

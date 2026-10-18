@@ -1,0 +1,96 @@
+@model MediCare.Web.Models.AdminScheduleViewModel
+@{ ViewData["Title"] = "Manage clinic schedule"; }
+<h1>Manage clinic schedule</h1>
+@if (ViewData["Message"] is string message) { <div class="alert alert-info" role="status">@message</div> }
+@if (TempData["CancellationMessage"] is string cancellationMessage) { <div class="alert alert-info" role="status">@cancellationMessage</div> }
+<div class="row g-4">
+    <section class="col-lg-4"><h2 class="h4">Add specialization</h2>
+        <form asp-action="AddSpecialization" method="post">
+            <div class="mb-3"><label for="SpecializationName" class="form-label">Name</label><input id="SpecializationName" name="SpecializationName" class="form-control" maxlength="100" required /></div>
+            <div class="mb-3"><label for="SpecializationDescription" class="form-label">Description</label><textarea id="SpecializationDescription" name="SpecializationDescription" class="form-control" maxlength="500"></textarea></div>
+            <button class="btn btn-primary" type="submit">Add specialization</button>
+        </form>
+    </section>
+    <section class="col-lg-4"><h2 class="h4">Add doctor</h2>
+        <form asp-action="AddDoctor" method="post">
+            <div class="mb-3"><label for="DoctorName" class="form-label">Doctor name</label><input id="DoctorName" name="DoctorName" class="form-control" maxlength="120" required /></div>
+            <div class="mb-3"><label for="SpecializationId" class="form-label">Specialization</label><select id="SpecializationId" name="SpecializationId" class="form-select" required><option value="">Choose a specialization</option>@foreach (var item in Model.Specializations) { <option value="@item.Id">@item.Name</option> }</select></div>
+            <button class="btn btn-primary" type="submit" disabled="@(Model.Specializations.Count == 0)">Add doctor</button>
+        </form>
+    </section>
+    <section class="col-lg-4"><h2 class="h4">Add available time</h2>
+        <form asp-action="AddTimeslot" method="post">
+            <div class="mb-3"><label for="DoctorId" class="form-label">Doctor</label><select id="DoctorId" name="DoctorId" class="form-select" required><option value="">Choose a doctor</option>@foreach (var item in Model.Doctors) { <option value="@item.Id">@item.Name — @item.Specialization.Name</option> }</select></div>
+            <div class="mb-3"><label for="StartsAt" class="form-label">Starts</label><input id="StartsAt" name="StartsAt" type="datetime-local" class="form-control" required /></div>
+            <div class="mb-3"><label for="EndsAt" class="form-label">Ends</label><input id="EndsAt" name="EndsAt" type="datetime-local" class="form-control" required /></div>
+            <button class="btn btn-primary" type="submit" disabled="@(Model.Doctors.Count == 0)">Add time</button>
+        </form>
+    </section>
+</div>
+<h2 class="h4 mt-5">Specializations</h2>
+@if (Model.Specializations.Count == 0) { <p>No specializations have been added.</p> } else { <ul>@foreach (var item in Model.Specializations) { <li>@item.Name</li> }</ul> }
+<h2 class="h4 mt-4">Doctors and accounts</h2>
+@if (Model.Doctors.Count == 0) { <p>No doctors have been added.</p> }
+else
+{
+    <div class="list-group">
+    @foreach (var item in Model.Doctors)
+    {
+        <div class="list-group-item">
+            <strong>@item.Name</strong> — @item.Specialization.Name
+            @if (Model.LinkedDoctorEmails.TryGetValue(item.Id, out var linkedEmail))
+            {
+                <span class="badge text-bg-success ms-2">@linkedEmail</span>
+            }
+            else if (Model.AvailableDoctorAccounts.Count > 0)
+            {
+                <form asp-action="LinkDoctorAccount" method="post" class="d-flex gap-2 mt-2">
+                    <input type="hidden" name="doctorId" value="@item.Id" />
+                    <select name="userId" class="form-select" required>
+                        <option value="">Choose the doctor's account</option>
+                        @foreach (var account in Model.AvailableDoctorAccounts) { <option value="@account.Id">@account.Email</option> }
+                    </select>
+                    <button type="submit" class="btn btn-outline-primary">Link</button>
+                </form>
+            }
+            else
+            {
+                <p class="mb-0 text-muted">No unlinked accounts are available.</p>
+            }
+        </div>
+    }
+    </div>
+}
+<h2 class="h4 mt-4">Upcoming slots</h2>
+@if (Model.Timeslots.Count == 0) { <p>No time slots have been added.</p> } else {
+<div class="table-responsive"><table class="table"><thead><tr><th>Doctor</th><th>Starts</th><th>Ends</th><th>Status</th></tr></thead><tbody>
+@foreach (var slot in Model.Timeslots) { <tr><td>@slot.Doctor.Name</td><td>@slot.StartsAt.ToString("g")</td><td>@slot.EndsAt.ToString("t")</td><td>@(slot.IsBooked ? "Booked" : "Available")</td></tr> }
+</tbody></table></div> }
+
+<h2 class="h4 mt-4">Appointments</h2>
+@if (Model.Appointments.Count == 0) { <p>No appointments have been booked.</p> }
+else
+{
+    <div class="table-responsive"><table class="table"><thead><tr><th>Doctor</th><th>Specialization</th><th>Starts</th><th>Ends</th><th>Status</th><th></th></tr></thead><tbody>
+    @foreach (var appointment in Model.Appointments)
+    {
+        <tr>
+            <td>@appointment.Timeslot.Doctor.Name</td>
+            <td>@appointment.Timeslot.Doctor.Specialization.Name</td>
+            <td>@appointment.Timeslot.StartsAt.ToString("f")</td>
+            <td>@appointment.Timeslot.EndsAt.ToString("t")</td>
+            <td>@(appointment.Status == MediCare.Core.AppointmentStatus.Cancelled ? "Cancelled" : "Booked")</td>
+            <td>
+                @if (appointment.Status == MediCare.Core.AppointmentStatus.Booked)
+                {
+                    <form asp-controller="AppointmentCancellations" asp-action="Cancel" method="post">
+                        <input type="hidden" name="appointmentId" value="@appointment.Id" />
+                        <input type="hidden" name="returnTo" value="Admin" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody></table></div>
+}

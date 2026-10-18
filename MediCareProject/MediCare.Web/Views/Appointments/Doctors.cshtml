@@ -1,0 +1,21 @@
+@model IReadOnlyList<MediCare.Core.Doctor>
+@{
+    var specialization = (MediCare.Core.Specialization)ViewData["Specialization"]!;
+    ViewData["Title"] = "Choose a doctor";
+}
+
+<h1>Doctors in @specialization.Name</h1>
+<p><a asp-action="Index">Choose another specialization</a></p>
+@if (Model.Count == 0)
+{
+    <p>No doctors are listed for this specialization yet.</p>
+}
+else
+{
+    <div class="list-group">
+    @foreach (var doctor in Model)
+    {
+        <a class="list-group-item list-group-item-action" asp-action="Timeslots" asp-route-doctorId="@doctor.Id">@doctor.Name — View available times</a>
+    }
+    </div>
+}
