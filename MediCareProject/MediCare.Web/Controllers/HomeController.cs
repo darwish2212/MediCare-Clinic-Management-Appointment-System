@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MediCare.Web.Models;
@@ -21,4 +22,22 @@ public class HomeController : Controller
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+    [Authorize(Roles = "Admin")]
+    public IActionResult AdminDashboard()
+    {
+        return View();
+    }
+
+    [Authorize(Roles = "Doctor")]
+    public IActionResult DoctorDashboard()
+    {
+        return View();
+    }
+
+    [Authorize(Roles = "Patient")]
+    public IActionResult PatientDashboard()
+    {
+        return View();
+    }
+
 }

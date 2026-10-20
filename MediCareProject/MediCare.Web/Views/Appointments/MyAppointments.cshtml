@@ -1,0 +1,65 @@
+@model IReadOnlyList<MediCare.Core.Appointment>
+@{
+    ViewData["Title"] = "My appointments";
+}
+
+<h1>My appointments</h1>
+<p><a asp-controller="Home" asp-action="PatientDashboard">Back to dashboard</a></p>
+@if (ViewData["AppointmentMessage"] is string appointmentMessage)
+{
+    <div class="alert alert-info" role="status">@appointmentMessage</div>
+}
+
+@if (Model.Count == 0)
+{
+    <p>You have no appointments yet.</p>
+    <a class="btn btn-primary" asp-action="Index">Find an appointment</a>
+}
+else
+{
+    <div class="list-group">
+    @foreach (var appointment in Model)
+    {
+        var slot = appointment.Timeslot;
+        var upcoming = slot.StartsAt > DateTime.Now;
+        <article class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    <h2 class="h5 mb-1">Dr. @slot.Doctor.Name</h2>
+                    <p class="mb-1">@slot.Doctor.Specialization.Name</p>
+                    <p class="mb-0">@slot.StartsAt.ToString("f") – @slot.EndsAt.ToString("t")</p>
+                </div>
+                <div class="text-end">
+                    @if (appointment.Status == MediCare.Core.AppointmentStatus.Cancelled)
+                    {
+                        <span class="badge text-bg-secondary">Cancelled</span>
+                    }
+                    else if (upcoming)
+                    {
+                        <span class="badge text-bg-success">Upcoming</span>
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-secondary">Past</span>
+                    }
+                </div>
+            </div>
+            @if (appointment.Status == MediCare.Core.AppointmentStatus.Booked && slot.StartsAt >= DateTime.Now.AddHours(12))
+            {
+                <div class="d-flex gap-2 mt-3">
+                    <a asp-action="Reschedule" asp-route-appointmentId="@appointment.Id" class="btn btn-outline-primary btn-sm">Reschedule</a>
+                    <form asp-controller="AppointmentCancellations" asp-action="Cancel" method="post">
+                        <input type="hidden" name="appointmentId" value="@appointment.Id" />
+                        <input type="hidden" name="returnTo" value="Patient" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Cancel appointment</button>
+                    </form>
+                </div>
+            }
+            else if (appointment.Status == MediCare.Core.AppointmentStatus.Booked && upcoming)
+            {
+                <p class="small text-muted mt-2 mb-0">Cancellation is available up to 12 hours before the appointment.</p>
+            }
+        </article>
+    }
+    </div>
+}

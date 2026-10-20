@@ -1,0 +1,50 @@
+@model MediCare.Web.Models.DoctorScheduleViewModel
+@{
+    ViewData["Title"] = "My appointments";
+}
+
+<h1>My appointments</h1>
+<p><a asp-controller="Home" asp-action="DoctorDashboard">Back to dashboard</a></p>
+@if (ViewData["CancellationMessage"] is string cancellationMessage)
+{
+    <div class="alert alert-info" role="status">@cancellationMessage</div>
+}
+
+@if (!Model.HasLinkedProfile)
+{
+    <div class="alert alert-info" role="status">Your doctor profile is not linked to this account yet. Please ask an administrator to link it.</div>
+}
+else if (Model.Appointments.Count == 0)
+{
+    <p>You have no appointments yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Patient email</th><th>Specialization</th><th>Starts</th><th>Ends</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var appointment in Model.Appointments)
+            {
+                <tr>
+                    <td>@appointment.PatientEmail</td>
+                    <td>@appointment.SpecializationName</td>
+                    <td>@appointment.StartsAt.ToString("f")</td>
+                    <td>@appointment.EndsAt.ToString("t")</td>
+                    <td>@(appointment.Status == MediCare.Core.AppointmentStatus.Cancelled ? "Cancelled" : "Booked")</td>
+                    <td>
+                        @if (appointment.Status == MediCare.Core.AppointmentStatus.Booked && appointment.StartsAt >= DateTime.Now.AddHours(12))
+                        {
+                            <form asp-controller="AppointmentCancellations" asp-action="Cancel" method="post">
+                                <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                                <input type="hidden" name="returnTo" value="Doctor" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
