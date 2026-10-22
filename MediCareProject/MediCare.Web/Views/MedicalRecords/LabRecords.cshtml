@@ -1,0 +1,14 @@
+@model IReadOnlyCollection<MediCare.Core.PatientLabRecord>
+@{ ViewData["Title"] = "Lab Records"; }
+<div class="container mt-4">
+    <h1>Lab records</h1>
+    <p class="text-muted">Files made available for your account.</p>
+    @if (!Model.Any()) { <p>No lab records are available.</p> }
+    else
+    {
+        <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Date</th><th>Record</th><th>File</th></tr></thead><tbody>
+        @foreach (var item in Model) { <tr><td>@item.RecordedAt.ToString("d")</td><td>@item.Title</td><td><a asp-action="DownloadLabRecord" asp-route-id="@item.Id">Download @item.FileName</a></td></tr> }
+        </tbody></table></div>
+    }
+    <a asp-controller="Home" asp-action="PatientDashboard">Back to dashboard</a>
+</div>

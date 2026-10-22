@@ -1,13 +1,60 @@
-
+@model MediCare.Web.Models.PatientDashboardViewModel
+@using MediCare.Core
 @{
     ViewData["Title"] = "Patient Dashboard";
 }
 
-<div class="container mt-5">
+<div class="container mt-4">
     <h1>Patient Dashboard</h1>
-    <p>Welcome to your MediCare patient area.</p>
-</div>
-<div class="mt-3">
-    <a class="btn btn-primary" asp-controller="Appointments" asp-action="Index">Book an appointment</a>
-    <a class="btn btn-outline-primary ms-2" asp-controller="Appointments" asp-action="MyAppointments">My appointments</a>
+    <p class="text-muted">Your appointments and medical records.</p>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a class="btn btn-primary" asp-controller="Appointments" asp-action="Index">Book an appointment</a>
+        <a class="btn btn-outline-primary" asp-controller="Appointments" asp-action="MyAppointments">All appointments</a>
+        <a class="btn btn-outline-secondary" asp-controller="MedicalRecords" asp-action="Prescriptions">Prescriptions</a>
+        <a class="btn btn-outline-secondary" asp-controller="MedicalRecords" asp-action="Allergies">Allergies</a>
+        <a class="btn btn-outline-secondary" asp-controller="MedicalRecords" asp-action="Diagnoses">Diagnoses</a>
+        <a class="btn btn-outline-secondary" asp-controller="MedicalRecords" asp-action="LabRecords">Lab records</a>
+    </div>
+
+    <div class="row g-4">
+        <section class="col-lg-6" aria-labelledby="upcoming-heading">
+            <h2 class="h4" id="upcoming-heading">Upcoming appointments</h2>
+            @if (!Model.UpcomingAppointments.Any())
+            {
+                <p class="text-muted">You have no upcoming appointments.</p>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var appointment in Model.UpcomingAppointments)
+                    {
+                        <div class="list-group-item">
+                            <strong>@appointment.Timeslot.StartsAt.ToString("ddd, MMM d, yyyy · h:mm tt")</strong>
+                            <div>Dr. @appointment.Timeslot.Doctor.Name · @appointment.Timeslot.Doctor.Specialization.Name</div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+        <section class="col-lg-6" aria-labelledby="completed-heading">
+            <h2 class="h4" id="completed-heading">Completed appointments</h2>
+            @if (!Model.CompletedAppointments.Any())
+            {
+                <p class="text-muted">No completed appointments to show.</p>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var appointment in Model.CompletedAppointments)
+                    {
+                        <div class="list-group-item">
+                            <strong>@appointment.Timeslot.StartsAt.ToString("ddd, MMM d, yyyy · h:mm tt")</strong>
+                            <div>Dr. @appointment.Timeslot.Doctor.Name · @appointment.Timeslot.Doctor.Specialization.Name</div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    </div>
 </div>

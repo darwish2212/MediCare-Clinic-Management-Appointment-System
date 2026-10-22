@@ -17,6 +17,10 @@ namespace MediCare.Data
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Timeslot> Timeslots { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<PatientPrescription> PatientPrescriptions { get; set; }
+        public DbSet<PatientAllergy> PatientAllergies { get; set; }
+        public DbSet<PatientDiagnosis> PatientDiagnoses { get; set; }
+        public DbSet<PatientLabRecord> PatientLabRecords { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -63,6 +67,11 @@ namespace MediCare.Data
                 .HasIndex(appointment => appointment.TimeslotId)
                 .IsUnique()
                 .HasFilter("[Status] = 0");
+
+            builder.Entity<PatientPrescription>().HasIndex(record => new { record.PatientId, record.PrescribedAt });
+            builder.Entity<PatientAllergy>().HasIndex(record => new { record.PatientId, record.RecordedAt });
+            builder.Entity<PatientDiagnosis>().HasIndex(record => new { record.PatientId, record.RecordedAt });
+            builder.Entity<PatientLabRecord>().HasIndex(record => new { record.PatientId, record.RecordedAt });
         }
     }
 }
