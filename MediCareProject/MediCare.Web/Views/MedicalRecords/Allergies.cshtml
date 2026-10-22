@@ -1,0 +1,14 @@
+@model IReadOnlyCollection<MediCare.Core.PatientAllergy>
+@{ ViewData["Title"] = "Allergies"; }
+<div class="container mt-4">
+    <h1>Allergies</h1>
+    <p class="text-muted">Allergy entries recorded for your account.</p>
+    @if (!Model.Any()) { <p>No allergy records are available.</p> }
+    else
+    {
+        <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Substance</th><th>Recorded reaction</th><th>Date recorded</th></tr></thead><tbody>
+        @foreach (var item in Model) { <tr><td>@item.Substance</td><td>@(string.IsNullOrWhiteSpace(item.RecordedReaction) ? "—" : item.RecordedReaction)</td><td>@item.RecordedAt.ToString("d")</td></tr> }
+        </tbody></table></div>
+    }
+    <a asp-controller="Home" asp-action="PatientDashboard">Back to dashboard</a>
+</div>

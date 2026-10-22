@@ -1,0 +1,14 @@
+@model IReadOnlyCollection<MediCare.Core.PatientDiagnosis>
+@{ ViewData["Title"] = "Diagnoses"; }
+<div class="container mt-4">
+    <h1>Diagnoses</h1>
+    <p class="text-muted">Diagnosis entries recorded for your account.</p>
+    @if (!Model.Any()) { <p>No diagnosis records are available.</p> }
+    else
+    {
+        <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Date recorded</th><th>Record</th><th>Recorded by</th></tr></thead><tbody>
+        @foreach (var item in Model) { <tr><td>@item.RecordedAt.ToString("d")</td><td>@item.Description</td><td>@item.RecordedBy</td></tr> }
+        </tbody></table></div>
+    }
+    <a asp-controller="Home" asp-action="PatientDashboard">Back to dashboard</a>
+</div>
